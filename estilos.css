@@ -1,0 +1,122 @@
+/* estilos.css */
+body {
+    background-color: #0d1117; /* Negro azulado profundo */
+    color: #c9d1d9;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 40px;
+}
+
+header {
+    border-bottom: 2px solid #58a6ff;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #58a6ff; /* Azul Eléctrico */
+    letter-spacing: 2px;
+}
+
+h2 {
+    color: #f0f6fc;
+}
+
+/* Estilo para los botones tipo interfaz de diagnóstico */
+button {
+    background-color: #238636; /* Verde "Sistema OK" */
+    color: white;
+    border: 1px solid rgba(240,246,252,0.1);
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #2ea043;
+    box-shadow: 0 0 10px #2ea043;
+}
+
+input, textarea {
+    background-color: #010409;
+    border: 1px solid #30363d;
+    color: #f0f6fc;
+    border-radius: 6px;
+    padding: 10px;
+    width: 100%;
+}
+.grid-automotriz {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.estado-gas {
+    background: #161b22;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px dashed #58a6ff;
+}
+
+.estado-gas label {
+    margin-right: 15px;
+    font-size: 0.9em;
+}
+
+/* Estilo para las "Carpetas" creadas */
+.carpeta-cliente {
+    background: #21262d;
+    border: 1px solid #30363d;
+    padding: 15px;
+    margin-top: 10px;
+    border-left: 5px solid #238636;
+    border-radius: 4px;
+}
+.btn-navegacion {
+    background-color: #58a6ff;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: 0.3s;
+}
+
+.btn-navegacion:hover {
+    background-color: #1f6feb;
+    box-shadow: 0 0 10px #58a6ff;
+}
+/* Estilos para el buscador */
+#buscador {
+    padding: 12px;
+    font-size: 1.1em;
+    border: 2px solid #30363d;
+    background-color: #0d1117;
+    color: white;
+    border-radius: 8px;
+    outline: none;
+    transition: 0.3s;
+}
+
+#buscador:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+}
+
+/* Estilo para las tarjetas en el historial */
+.carpeta-cliente {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-left: 5px solid #ffcc00; /* Amarilo industrial para resaltar */
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    transition: transform 0.2s;
+}
+
+.carpeta-cliente:hover {
+    transform: scale(1.01);
+    background: #1c2128;
+}

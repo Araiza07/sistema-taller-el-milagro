@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Taller El Milagro</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>Registro de Ingreso</h1>
+                <p>Taller El Milagro</p>
+            </div>
+            <a href="ordenes.html" class="btn-navegacion">Ver Historial / Buscar →</a>
+        </div>
+    </header>
+
+    <section id="nueva-orden">
+        <form id="form-orden">
+            <input type="text" id="cliente" placeholder="Nombre del Cliente" required>
+            <div class="grid-automotriz">
+                <input type="text" id="contacto" placeholder="Número de contacto">
+                <input type="email" id="correo" placeholder="Correo electrónico">
+            </div>
+            
+            <div class="grid-automotriz">
+                <input type="text" id="marca" placeholder="Marca">
+                <input type="text" id="modelo" placeholder="Modelo">
+                <input type="number" id="año" placeholder="Año">
+                <input type="text" id="color" placeholder="Color">
+            </div>
+
+            <div class="grid-automotriz">
+                <input type="text" id="placas" placeholder="Placas">
+                <input type="text" id="vin" placeholder="VIN de Serie">
+                <input type="text" id="km" placeholder="Kilometraje">
+            </div>
+
+            <div class="estado-gas">
+                <p><strong>Cantidad de Gasolina:</strong></p>
+                <label><input type="radio" name="gas" value="Lleno"> Lleno</label>
+                <label><input type="radio" name="gas" value="3/4"> 3/4</label>
+                <label><input type="radio" name="gas" value="1/2"> 1/2</label>
+                <label><input type="radio" name="gas" value="1/4"> 1/4</label>
+                <label><input type="radio" name="gas" value="No funciona"> No funciona indicador</label>
+            </div>
+
+            <div class="estado-gas">
+                <p><strong>¿Funciona el tablero?</strong></p>
+                <label><input type="radio" name="tablero" value="SI"> SI</label>
+                <label><input type="radio" name="tablero" value="NO"> NO</label>
+            </div>
+
+            <textarea id="motivo" placeholder="Motivo de Ingreso al Taller"></textarea>
+            <button type="submit">Crear Carpeta de Servicio</button>
+        </form>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
