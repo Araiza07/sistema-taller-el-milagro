@@ -1,6 +1,12 @@
+// Validar si el usuario ya inició sesión
+if (sessionStorage.getItem('autenticado') !== 'true') {
+    window.location.href = 'login.html';
+}
 // script-ordenes.js - GESTIÓN DE HISTORIAL Y BÚSQUEDA (CON SEGUIMIENTO)
-
-const API_URL = 'http://localhost:3000/api/ordenes';
+//const API_URL = 'http://localhost:3000/api/ordenes';
+//const API_URL = 'http://192.168.1.78:3000/api/ordenes';
+// Reemplaza tu const API_URL por esta línea en TODOS tus archivos JS:
+const API_URL = `http://${window.location.hostname}:3000/api/ordenes`;
 const contenedorRecientes = document.getElementById('contenedor-recientes');
 const contenedorBusqueda = document.getElementById('contenedor-busqueda');
 const buscador = document.getElementById('buscador');
@@ -13,24 +19,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const respuesta = await fetch(API_URL);
         todasLasOrdenes = await respuesta.json();
         
-        // CORRECCIÓN: Procesar las evidencias para que el programa las entienda
         todasLasOrdenes.forEach(o => {
             if (typeof o.evidencias === 'string') {
-                try { 
-                    o.evidencias = JSON.parse(o.evidencias); 
-                } catch (e) { 
-                    o.evidencias = []; 
-                }
+                try { o.evidencias = JSON.parse(o.evidencias); } 
+                catch (e) { o.evidencias = []; }
             }
-            // Asegurar que el estado no sea null
             if (!o.estado) o.estado = 'abierto';
         });
 
-        actualizarContadores(); // Ahora esta función sí existe al final del archivo
+        actualizarContadores();
         mostrarUltimasCinco();
     } catch (error) {
         console.error("Error al cargar datos:", error);
-        alert("No se pudo conectar con el servidor. Revisa la terminal.");
+        alert("No se pudo conectar con el servidor. RECUERDA INICIAR 'node server.js' EN LA TERMINAL.");
     }
 });
 
@@ -62,7 +63,7 @@ buscador.addEventListener('input', (e) => {
     }
 });
 
-// 3. CREAR TARJETA (Modificada para pasar solo el ID)
+// 3. CREAR TARJETA
 function crearTarjeta(orden, destino) {
     const div = document.createElement('div');
     div.classList.add('carpeta-cliente');
@@ -89,20 +90,13 @@ function crearTarjeta(orden, destino) {
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <button onclick="prepararPDF(${orden.id})" 
-                    style="background: #ffcc00; color: #000; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none;">
-                    📄 PDF
-                </button>
+                <button onclick="prepararPDF(${orden.id}, 'descargar')" style="background: #ffcc00; color: #000; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none;">📥 Descargar</button>
+                <button onclick="prepararPDF(${orden.id}, 'ver')" style="background: #58a6ff; color: #fff; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none;">👁️ Ver Nota</button>
+                <button onclick="eliminarOrden(${orden.id})" style="background: #da3633; color: #fff; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none; margin-top: 5px; font-size: 0.8em;">🗑️ Eliminar</button>
                 
                 ${orden.estado !== 'cerrado' ? `
-                    <button onclick="agregarEvidencia(${orden.id})" 
-                        style="background: #58a6ff; color: #fff; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none;">
-                        + Nota/Foto
-                    </button>
-                    <button onclick="cerrarOrden(${orden.id})" 
-                        style="background: #238636; color: #fff; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none;">
-                        Terminar
-                    </button>
+                    <button onclick="agregarEvidencia(${orden.id})" style="background: #30363d; color: #fff; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none; font-size: 0.8em;">+ Nota/Foto</button>
+                    <button onclick="cerrarOrden(${orden.id})" style="background: #238636; color: #fff; font-weight: bold; border-radius: 4px; padding: 6px 10px; cursor: pointer; border:none;">Terminar</button>
                 ` : ''}
             </div>
         </div>
@@ -112,25 +106,22 @@ function crearTarjeta(orden, destino) {
 
 // 4. FUNCIONES DE ACTUALIZACIÓN
 async function agregarEvidencia(id) {
-    const nota = prompt("Escribe una nota sobre el avance o daño encontrado:");
-    if (nota === null) return;
-
     const inputFoto = document.createElement('input');
     inputFoto.type = 'file';
     inputFoto.accept = 'image/*';
 
     inputFoto.onchange = async (e) => {
         const file = e.target.files[0];
-        const reader = new FileReader();
+        const nota = prompt("Escribe una nota sobre el avance o daño encontrado:");
+        if (nota === null && !file) return;
 
+        const reader = new FileReader();
         reader.onloadend = async () => {
-            const base64Image = reader.result;
+            const base64Image = file ? reader.result : null;
             const orden = todasLasOrdenes.find(o => o.id === id);
             
-            if (nota.trim() !== "") {
-                orden.evidencias.push({ tipo: 'nota', contenido: nota });
-            }
-            orden.evidencias.push({ tipo: 'foto', contenido: base64Image });
+            if (nota && nota.trim() !== "") orden.evidencias.push({ tipo: 'nota', contenido: nota });
+            if (base64Image) orden.evidencias.push({ tipo: 'foto', contenido: base64Image });
 
             await actualizarBD(id, orden.evidencias, 'abierto');
             location.reload();
@@ -138,7 +129,7 @@ async function agregarEvidencia(id) {
         if (file) reader.readAsDataURL(file);
         else {
             const orden = todasLasOrdenes.find(o => o.id === id);
-            if (nota.trim() !== "") {
+            if (nota) {
                 orden.evidencias.push({ tipo: 'nota', contenido: nota });
                 await actualizarBD(id, orden.evidencias, 'abierto');
                 location.reload();
@@ -149,7 +140,7 @@ async function agregarEvidencia(id) {
 }
 
 async function cerrarOrden(id) {
-    if (confirm("¿Marcar trabajo como TERMINADO? Ya no podrás agregar más evidencias.")) {
+    if (confirm("¿Marcar trabajo como TERMINADO?")) {
         const orden = todasLasOrdenes.find(o => o.id === id);
         await actualizarBD(id, orden.evidencias, 'cerrado');
         location.reload();
@@ -163,80 +154,112 @@ async function actualizarBD(id, evidencias, estado) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ evidencias: JSON.stringify(evidencias), estado: estado })
         });
-    } catch (error) {
-        alert("Error al actualizar la base de datos.");
+    } catch (error) { alert("Error al conectar con el servidor."); }
+}
+
+async function eliminarOrden(id) {
+    if (confirm("⚠️ ¿Eliminar esta orden permanentemente?")) {
+        try {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            location.reload();
+        } catch (error) { alert("Error al eliminar."); }
     }
 }
 
 // 5. GENERADOR DE PDF
-function prepararPDF(id) {
-    const ordenActualizada = todasLasOrdenes.find(o => o.id === id);
-    if (ordenActualizada) {
-        ejecutarGenerarPDF(ordenActualizada);
-    }
+function prepararPDF(id, accion) {
+    const orden = todasLasOrdenes.find(o => o.id === id);
+    if (orden) ejecutarGenerarPDF(orden, accion);
 }
 
-function ejecutarGenerarPDF(orden) {
+function ejecutarGenerarPDF(orden, accion) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+
+    // ENCABEZADO Y LOGO
     doc.setFillColor(33, 38, 45);
-    doc.rect(0, 0, 210, 40, 'F');
+    doc.rect(0, 0, 130, 45, 'F'); 
     doc.setTextColor(88, 166, 255);
     doc.setFontSize(22);
-    doc.text("TALLER MECÁNICO EL MILAGRO", 15, 25);
+    doc.setFont("helvetica", "bold");
+    doc.text("TALLER MECÁNICO", 15, 18);
+    doc.text("EL MILAGRO", 15, 30);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text("Transmisiones Automáticas y Mecánica General", 15, 38);
+
+    try {
+        const imgLogo = new Image();
+        imgLogo.src = 'logo.png'; 
+        doc.addImage(imgLogo, 'PNG', 135, 2, 65, 40); 
+    } catch (e) { console.error("Logo no encontrado"); }
+
+    doc.setDrawColor(88, 166, 255);
+    doc.line(15, 48, 195, 48);
     
+    // DATOS CLIENTE
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.text(`REPORTE FINAL - ESTADO: ${orden.estado.toUpperCase()}`, 15, 50);
-    doc.line(15, 52, 195, 52);
+    doc.text(`REPORTE FINAL - ESTADO: ${orden.estado.toUpperCase()}`, 15, 58);
+    doc.line(15, 60, 195, 60);
 
     doc.setFont("helvetica", "normal");
-    doc.text(`Cliente: ${orden.cliente}`, 15, 60);
-    doc.text(`Vehículo: ${orden.marca} ${orden.modelo} (${orden.año})`, 15, 68);
-    doc.text(`Placas: ${orden.placas} | KM: ${orden.km}`, 15, 76);
-    doc.text(`VIN: ${orden.vin}`, 15, 84);
+    doc.text(`Cliente: ${orden.cliente}`, 15, 68);
+    doc.text(`Vehículo: ${orden.marca} ${orden.modelo} (${orden.año || 'N/A'})`, 15, 76);
+    doc.text(`Placas: ${orden.placas} | KM: ${orden.km}`, 15, 84);
+    doc.text(`VIN: ${orden.vin}`, 15, 92);
     
+    // DIAGNÓSTICO
     doc.setFont("helvetica", "bold");
-    doc.text("DIAGNÓSTICO DE ENTRADA:", 15, 95);
+    doc.text("DIAGNÓSTICO DE ENTRADA:", 15, 105);
     doc.setFont("helvetica", "normal");
-    doc.text(orden.motivo, 15, 102, { maxWidth: 180 });
+    const motivo = doc.splitTextToSize(orden.motivo || "Sin motivo registrado", 180);
+    doc.text(motivo, 15, 112);
 
-    doc.line(15, 120, 195, 120);
-    doc.setFont("helvetica", "bold");
-    doc.text("HISTORIAL DE TRABAJO Y EVIDENCIAS:", 15, 128);
+    let y = 115 + (motivo.length * 5);
+    doc.line(15, y, 195, y);
     
-    let y = 138;
-    orden.evidencias.forEach((ev) => {
-        if (y > 240) { doc.addPage(); y = 20; }
-        if (ev.tipo === 'nota') {
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(10);
-            doc.text(`- ${ev.contenido}`, 20, y);
-            y += 10;
-        } else if (ev.tipo === 'foto') {
-            try {
-                doc.addImage(ev.contenido, 'JPEG', 20, y, 60, 45);
-                y += 55;
-            } catch (e) { console.error("Error con la imagen:", e); }
-        }
-    });
+    // EVIDENCIAS
+    y += 10;
+    doc.setFont("helvetica", "bold");
+    doc.text("HISTORIAL DE TRABAJO Y EVIDENCIAS:", 15, y);
+    y += 10;
+
+    if (orden.evidencias && orden.evidencias.length > 0) {
+        orden.evidencias.forEach((ev) => {
+            if (y > 240) { doc.addPage(); y = 20; }
+            if (ev.tipo === 'nota') {
+                doc.setFont("helvetica", "italic");
+                const nota = doc.splitTextToSize(`- ${ev.contenido}`, 175);
+                doc.text(nota, 20, y);
+                y += (nota.length * 5) + 5;
+            } else if (ev.tipo === 'foto') {
+                try {
+                    doc.addImage(ev.contenido, 'JPEG', 20, y, 90, 55);
+                    y += 65;
+                } catch (e) { }
+            }
+        });
+    }
 
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
     doc.text("Evidencia Digital - Sistema de Gestión El Milagro", 105, 285, { align: "center" });
-    doc.save(`Reporte_Completo_${orden.placas}.pdf`);
+
+    if (accion === 'ver') window.open(doc.output('bloburl'), '_blank');
+    else doc.save(`Reporte_${orden.placas}.pdf`);
 }
 
-// ESTA ES LA PARTE QUE TE FALTABA
 function actualizarContadores() {
     const abiertos = todasLasOrdenes.filter(o => o.estado !== 'cerrado').length;
     const cerrados = todasLasOrdenes.filter(o => o.estado === 'cerrado').length;
-
-    const elAbiertos = document.getElementById('total-abiertos');
-    const elCerrados = document.getElementById('total-cerrados');
-    
-    if (elAbiertos) elAbiertos.innerText = abiertos;
-    if (elCerrados) elCerrados.innerText = cerrados;
+    document.getElementById('total-abiertos').innerText = abiertos;
+    document.getElementById('total-cerrados').innerText = cerrados;
+}
+function cerrarSesion() {
+    // Borramos la validación de la memoria
+    sessionStorage.removeItem('autenticado');
+    // Mandamos al usuario de vuelta al login
+    window.location.href = 'login.html';
 }

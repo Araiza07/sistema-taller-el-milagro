@@ -1,7 +1,15 @@
+// Validar si el usuario ya inició sesión
+if (sessionStorage.getItem('autenticado') !== 'true') {
+    window.location.href = 'login.html';
+}
 // script.js - SOLO REGISTRO (Pantalla Principal)
 
-const API_URL = 'http://localhost:3000/api/ordenes';
+//const API_URL = 'http://localhost:3000/api/ordenes';
+// Reemplaza tu const API_URL por esta línea en TODOS tus archivos JS:
+const API_URL = `http://${window.location.hostname}:3000/api/ordenes`;
+//const API_URL = 'http://192.168.1.78:3000/api/ordenes';
 const form = document.getElementById('form-orden');
+
 
 // 1. ESCUCHAR EL ENVÍO DEL FORMULARIO
 form.addEventListener('submit', async function(e) {
@@ -44,3 +52,9 @@ form.addEventListener('submit', async function(e) {
         alert("No se pudo conectar con el servidor. Revisa la terminal.");
     }
 });
+function cerrarSesion() {
+    // Borramos la validación de la memoria
+    sessionStorage.removeItem('autenticado');
+    // Mandamos al usuario de vuelta al login
+    window.location.href = 'login.html';
+}

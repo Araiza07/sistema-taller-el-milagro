@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Taller El Milagro</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #0d1117;">
+    
+    <div style="background: #161b22; padding: 40px; border-radius: 12px; border: 1px solid #30363d; width: 320px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+        
+       <div style="margin-bottom: 25px; display: flex; justify-content: center;">
+    <div style="
+        border-radius: 20px; 
+        padding: 5px; 
+        background: #161b22; 
+        border: 2px solid #58a6ff; 
+        box-shadow: 0 0 15px rgba(88, 166, 255, 0.3);
+        overflow: hidden;">
+        
+        <img src="logo.png" alt="Logo El Milagro" 
+            style="
+                max-width: 180px; 
+                height: auto; 
+                display: block; 
+                border-radius: 15px;
+                mix-blend-mode: screen; 
+                filter: brightness(1.1);">
+    </div>
+</div>
+
+        <h2 style="color: #58a6ff; margin-bottom: 20px; font-family: sans-serif;">Panel de Control</h2>
+        
+        <input type="text" id="user" placeholder="Usuario" 
+            style="width: 100%; margin-bottom: 15px; padding: 12px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 6px; box-sizing: border-box;">
+        
+        <input type="password" id="pass" placeholder="Contraseña" 
+            style="width: 100%; margin-bottom: 20px; padding: 12px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 6px; box-sizing: border-box;">
+        
+        <button onclick="entrar()" 
+            style="width: 100%; padding: 12px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;">
+            Ingresar al Sistema
+        </button>
+
+        <p style="color: #8b949e; font-size: 12px; margin-top: 25px;">Taller Mecánico "El Milagro" &copy; 2026</p>
+    </div>
+
+    <script>
+        // Función para entrar con el botón
+        async function entrar() {
+            const usuario = document.getElementById('user').value;
+            const clave = document.getElementById('pass').value;
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ usuario, clave })
+            });
+
+            if (res.ok) {
+                sessionStorage.setItem('autenticado', 'true');
+                window.location.href = 'index.html';
+            } else {
+                alert("Usuario o contraseña incorrectos. Verifica tus datos.");
+            }
+        }
+
+        // Permitir entrar presionando "Enter" en el teclado
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                entrar();
+            }
+        });
+    </script>
+</body>
+</html>
